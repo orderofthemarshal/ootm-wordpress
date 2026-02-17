@@ -1,1 +1,10 @@
-{}
+{
+    "name": "orderofthemarshal/ootm-wordpress",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "OOTMWordpress\\": "src/"
+        }
+    },
+    "require": {}
+}
