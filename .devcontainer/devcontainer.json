@@ -1,0 +1,24 @@
+{
+    "build": {
+        "dockerfile": "./Containerfile",
+        "context": "."
+    },
+    // "updateContentCommand": "npm install",
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "eamodio.gitlens",
+                "foxundermoon.shell-format",
+                "ms-azuretools.vscode-docker",
+                "wdhongtw.gpg-indicator",
+                "esbenp.prettier-vscode",
+                "yzhang.markdown-all-in-one",
+                "EditorConfig.EditorConfig",
+                "HashiCorp.terraform",
+                "DEVSENSE.phptools-vscode"
+            ]
+        }
+    }
+}
