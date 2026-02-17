@@ -6,5 +6,13 @@
             "OOTMWordpress\\": "src/"
         }
     },
-    "require": {}
+    "require": {
+        "johnpbloch/wordpress-core-installer": "^2.0",
+        "johnpbloch/wordpress-core": "^6.9"
+    },
+    "config": {
+        "allow-plugins": {
+            "johnpbloch/wordpress-core-installer": true
+        }
+    }
 }
