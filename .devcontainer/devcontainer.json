@@ -1,8 +1,17 @@
 {
-    "build": {
-        "dockerfile": "./Containerfile",
-        "context": "."
-    },
+    "name": "ootm-wordpress",
+    "dockerComposeFile": "./compose.yml",
+    "service": "devcontainer",
+    "runServices": [
+        "devcontainer",
+        "mariadb"
+    ],
+    "workspaceFolder": "/workspaces/ootm-wordpress",
+    // Podman + devcontainers: disable the extra UID/GID rebasing step that tries to
+    // rebuild FROM localhost/... (fails because it attempts to pull from a registry).
+    "updateRemoteUserUID": false,
+    "shutdownAction": "stopCompose",
+    "remoteUser": "developer",
     // "updateContentCommand": "npm install",
     "customizations": {
         // Configure properties specific to VS Code.
@@ -17,7 +26,8 @@
                 "yzhang.markdown-all-in-one",
                 "EditorConfig.EditorConfig",
                 "HashiCorp.terraform",
-                "DEVSENSE.phptools-vscode"
+                "DEVSENSE.phptools-vscode",
+                "openai.chatgpt"
             ]
         }
     }

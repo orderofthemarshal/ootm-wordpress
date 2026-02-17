@@ -1,0 +1,45 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Containerfile
+    command: sleep infinity
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      WP_DB_NAME: wordpress
+      WP_DB_USER: wordpress
+      WP_DB_PASSWORD: wordpress
+      WP_DB_HOST: mariadb
+      WP_HOME: http://localhost:8080
+      WP_SITEURL: http://localhost:8080
+    ports:
+      - "8080:8080"
+    volumes:
+      # Podman + SELinux: keep relabel (:Z) and drop the Docker-only "cached"
+      # flag that can make the bind mount fall back to read-only.
+      - ..:/workspaces/ootm-wordpress:Z
+    working_dir: /workspaces/ootm-wordpress
+    userns_mode: keep-id
+
+  mariadb:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: root
+    healthcheck:
+      test:
+        ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    volumes:
+      - mariadb-data:/var/lib/mysql
+
+volumes:
+  mariadb-data:

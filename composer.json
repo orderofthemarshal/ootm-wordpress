@@ -3,16 +3,25 @@
     "type": "project",
     "autoload": {
         "psr-4": {
-            "OOTMWordpress\\": "src/"
+            "WordpressCore\\": "wordpress/"
         }
     },
     "require": {
-        "johnpbloch/wordpress-core-installer": "^2.0",
-        "johnpbloch/wordpress-core": "^6.9"
+        "ext-mysqli": "*"
     },
-    "config": {
-        "allow-plugins": {
-            "johnpbloch/wordpress-core-installer": true
-        }
+    "extra": {
+        "wordpress-install-dir": "web/wp"
+    },
+    "scripts": {
+        "serve": "bash scripts/serve-nginx.sh",
+        "ensure-content-dirs": [
+            "mkdir -p web/wp-content/themes web/wp-content/plugins web/wp-content/uploads web/wp-content/mu-plugins static"
+        ],
+        "post-install-cmd": [
+            "@ensure-content-dirs"
+        ],
+        "post-update-cmd": [
+            "@ensure-content-dirs"
+        ]
     }
 }

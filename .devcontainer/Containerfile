@@ -1,5 +1,9 @@
 FROM docker.io/fedora:43
 
+# Allow caller to set UID/GID at build time (default 1000).
+ARG USER_UID=1000
+ARG USER_GID=1000
+
 ### System dependencies
 RUN dnf install -y \
   bash-completion \
@@ -14,9 +18,13 @@ RUN dnf install -y \
   jq \
   man-db \
   ncurses \
+  nginx \
   npm \
   openssh openssh-clients openssh-server \
   php \
+  php-fpm \
+  php-mysqlnd \
+  podman podman-docker \
   python3 \
   sudo \
   unzip \
@@ -39,7 +47,9 @@ RUN printf '\n\
   \n' >> /etc/bashrc
 
 # Set up 'developer' user, no password, with sudo
-RUN useradd -m -G wheel developer
+# Align container user with host UID/GID (1000) so bind mounts are writable.
+RUN groupadd -g ${USER_GID} developer \
+  && useradd -m -u ${USER_UID} -g ${USER_GID} -G wheel developer
 RUN printf '\n\ndeveloper ALL=(ALL) NOPASSWD: ALL\n' >> /etc/sudoers
 RUN chown developer:developer -R /home/developer
 USER developer
