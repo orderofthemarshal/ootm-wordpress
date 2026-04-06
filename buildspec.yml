@@ -31,7 +31,8 @@ phases:
     commands:
       - echo "Building ${LOCAL_IMAGE} from ${DOCKERFILE_PATH} (target=${BUILD_TARGET})"
       - docker build --target "${BUILD_TARGET}" -f "${DOCKERFILE_PATH}" -t "${LOCAL_IMAGE}" .
-      - docker image inspect "${LOCAL_IMAGE}" --format='Built image id: {{.Id}}'
+      - |
+        docker image inspect "${LOCAL_IMAGE}" --format='Built image id: {{.Id}}'
       - |
         if [[ "${PUSH_IMAGE}" == "true" ]]; then
           docker tag "${LOCAL_IMAGE}" "${REMOTE_IMAGE}"
