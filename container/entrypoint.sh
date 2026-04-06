@@ -9,6 +9,11 @@
 
 set -euo pipefail
 
+# Fedora's default php-fpm.conf writes its PID file under /run/php-fpm.
+# In container runtimes this directory may not exist yet, so create it
+# explicitly before launching php-fpm.
+mkdir -p /run/php-fpm
+
 # Start PHP-FPM.  The default Fedora config has daemonize = yes, so this
 # returns immediately after forking the worker processes.
 php-fpm
