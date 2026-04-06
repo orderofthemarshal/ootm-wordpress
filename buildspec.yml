@@ -1,0 +1,54 @@
+version: 0.2
+
+env:
+  shell: bash
+  variables:
+    DOCKERFILE_PATH: Containerfile
+    BUILD_TARGET: deployment
+    IMAGE_NAME: ootm-wordpress
+    PUSH_IMAGE: "false"
+    IMAGE_TAG: ""
+
+phases:
+  pre_build:
+    commands:
+      - set -euo pipefail
+      - echo "Build started on $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      - COMMIT_HASH="$(echo "$CODEBUILD_RESOLVED_SOURCE_VERSION" | cut -c1-7)"
+      - if [[ -n "${IMAGE_TAG}" ]]; then EFFECTIVE_TAG="${IMAGE_TAG}"; else EFFECTIVE_TAG="${COMMIT_HASH:-latest}"; fi
+      - LOCAL_IMAGE="${IMAGE_NAME}:${EFFECTIVE_TAG}"
+      - |
+        if [[ "${PUSH_IMAGE}" == "true" ]]; then
+          : "${AWS_DEFAULT_REGION:?AWS_DEFAULT_REGION is required when PUSH_IMAGE=true}"
+          : "${ECR_REPOSITORY_URI:?ECR_REPOSITORY_URI is required when PUSH_IMAGE=true}"
+          echo "Logging in to Amazon ECR..."
+          aws ecr get-login-password --region "${AWS_DEFAULT_REGION}" \
+            | docker login --username AWS --password-stdin "${ECR_REPOSITORY_URI%%/*}"
+          REMOTE_IMAGE="${ECR_REPOSITORY_URI}:${EFFECTIVE_TAG}"
+        fi
+
+  build:
+    commands:
+      - echo "Building ${LOCAL_IMAGE} from ${DOCKERFILE_PATH} (target=${BUILD_TARGET})"
+      - docker build --target "${BUILD_TARGET}" -f "${DOCKERFILE_PATH}" -t "${LOCAL_IMAGE}" .
+      - docker image inspect "${LOCAL_IMAGE}" --format='Built image id: {{.Id}}'
+      - |
+        if [[ "${PUSH_IMAGE}" == "true" ]]; then
+          docker tag "${LOCAL_IMAGE}" "${REMOTE_IMAGE}"
+        fi
+
+  post_build:
+    commands:
+      - |
+        if [[ "${PUSH_IMAGE}" == "true" ]]; then
+          echo "Pushing ${REMOTE_IMAGE}"
+          docker push "${REMOTE_IMAGE}"
+          printf '{"image":"%s","tag":"%s"}\n' "${ECR_REPOSITORY_URI}" "${EFFECTIVE_TAG}" > image-metadata.json
+        else
+          printf '{"image":"%s","tag":"%s"}\n' "${IMAGE_NAME}" "${EFFECTIVE_TAG}" > image-metadata.json
+        fi
+      - cat image-metadata.json
+
+artifacts:
+  files:
+    - image-metadata.json
